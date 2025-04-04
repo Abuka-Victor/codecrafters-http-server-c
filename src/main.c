@@ -17,7 +17,8 @@ int main() {
 
 	// Uncomment this block to pass the first stage
 	//
-	int server_fd, client_addr_len;
+	int server_fd;
+  socklen_t client_addr_len;
 	struct sockaddr_in client_addr;
 	
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -50,17 +51,28 @@ int main() {
 		return 1;
 	}
 	
-	printf("Waiting for a client to connect...\n");
 	client_addr_len = sizeof(client_addr);
+  
+  char *ok_response = "HTTP/1.1 200 OK\r\n\r\n";
+  char *not_found_response = "HTTP/1.1 404 Not Found\r\n\r\n";
+  int client;
+  char buffer[30000];
+  
+  while(1){
+    printf("Waiting for a client to connect...\n");
+    client = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len);
+    printf("Client connected\n");
+    read(client, buffer, sizeof(buffer));
+    printf("Request received:\n%s\n", buffer);
+    if(buffer[5] == ' '){
+      write(client, ok_response, strlen(ok_response));
+    } else {
+      write(client, not_found_response, strlen(not_found_response));
+    }
+    printf("Response sent\n");
+    close(client);
+  }
 
-  char *response = "HTTP/1.1 200 OK\r\n\r\n";
-	
-	int client = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len);
-	printf("Client connected\n");
-  write(client, response, strlen(response));
-  printf("Response sent\n");
-	
-	close(server_fd);
-
+  close(server_fd);
 	return 0;
 }
