@@ -47,7 +47,7 @@ int main() {
 	
 	client_addr_len = sizeof(client_addr);
   
-  char *ok_response = "HTTP/1.1 200 OK\r\n";
+  char *ok_response = "HTTP/1.1 200 OK\r\n\r\n";
   // char ok_response[10000] = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
   char *not_found_response = "HTTP/1.1 404 Not Found\r\n\r\n";
   int client;
