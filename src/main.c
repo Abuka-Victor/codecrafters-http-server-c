@@ -47,7 +47,7 @@ int main() {
 	
 	client_addr_len = sizeof(client_addr);
   
-  // char *ok_response = "HTTP/1.1 200 OK\r\n";
+  char *ok_response = "HTTP/1.1 200 OK\r\n";
   // char ok_response[10000] = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
   char *not_found_response = "HTTP/1.1 404 Not Found\r\n\r\n";
   int client;
@@ -60,7 +60,9 @@ int main() {
     read(client, buffer, sizeof(buffer));
     request = requestParser(buffer);
     char *path = strtok(request.path, "/");
-    if(strcmp(path, "echo") == 0){
+    if(strcmp(request.path, "/") == 0){
+      write(client, ok_response, strlen(ok_response));
+    }else if(strcmp(path, "echo") == 0){
       path = strtok(NULL, "/");
       int path_length = strlen(path);
       char response2[1024];
