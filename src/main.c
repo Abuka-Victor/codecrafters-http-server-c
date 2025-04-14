@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
+#include "header.h"
 
 int main() {
 	// Disable output buffering
@@ -20,6 +13,7 @@ int main() {
 	int server_fd;
   socklen_t client_addr_len;
 	struct sockaddr_in client_addr;
+  struct http_request request;
 	
 	server_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if (server_fd == -1) {
@@ -63,8 +57,8 @@ int main() {
     client = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len);
     printf("Client connected\n");
     read(client, buffer, sizeof(buffer));
-    printf("Request received:\n%s\n", buffer);
-    if(buffer[5] == ' '){
+    request = requestParser(buffer);
+    if(strcmp(request.path, "/") == 0){
       write(client, ok_response, strlen(ok_response));
     } else {
       write(client, not_found_response, strlen(not_found_response));
