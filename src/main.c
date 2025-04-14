@@ -47,7 +47,8 @@ int main() {
 	
 	client_addr_len = sizeof(client_addr);
   
-  char *ok_response = "HTTP/1.1 200 OK\r\n\r\n";
+  // char *ok_response = "HTTP/1.1 200 OK\r\n";
+  // char ok_response[10000] = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n";
   char *not_found_response = "HTTP/1.1 404 Not Found\r\n\r\n";
   int client;
   char buffer[30000];
@@ -58,8 +59,15 @@ int main() {
     printf("Client connected\n");
     read(client, buffer, sizeof(buffer));
     request = requestParser(buffer);
-    if(strcmp(request.path, "/") == 0){
-      write(client, ok_response, strlen(ok_response));
+    char *path = strtok(request.path, "/");
+    if(strcmp(path, "echo") == 0){
+      path = strtok(NULL, "/");
+      int path_length = strlen(path);
+      char response2[1024];
+      sprintf(response2, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", path_length, path);
+      // strcat(ok_response, response2);
+      write(client, response2, strlen(response2));
+      memset(response2, 0, sizeof(response2));
     } else {
       write(client, not_found_response, strlen(not_found_response));
     }
