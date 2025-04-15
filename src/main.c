@@ -52,27 +52,31 @@ int main() {
   char *not_found_response = "HTTP/1.1 404 Not Found\r\n\r\n";
   int client;
   char buffer[30000];
+  char response[1024];
   
   while(1){
+    memset(response, 0, sizeof(response));
     printf("Waiting for a client to connect...\n");
     client = accept(server_fd, (struct sockaddr *) &client_addr, &client_addr_len);
     printf("Client connected\n");
     read(client, buffer, sizeof(buffer));
     request = requestParser(buffer);
     char *path = strtok(request.path, "/");
-    if(strcmp(request.path, "/") == 0){
+
+    if(strcmp(request.path, "/") == 0){ // path: /
       write(client, ok_response, strlen(ok_response));
-    }else if(strcmp(path, "echo") == 0){
+    }else if(strcmp(path, "echo") == 0){ // path: /echo
       path = strtok(NULL, "/");
       int path_length = strlen(path);
-      char response2[1024];
-      sprintf(response2, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", path_length, path);
-      // strcat(ok_response, response2);
-      write(client, response2, strlen(response2));
-      memset(response2, 0, sizeof(response2));
-    } else {
+      sprintf(response, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %d\r\n\r\n%s", path_length, path);
+      write(client, response, strlen(response));
+    }else if(strcmp(path, "user-agent") == 0){ // path: /user-agent
+      sprintf(response, "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: %ld\r\n\r\n%s", strlen(request.header.user_agent), request.header.user_agent);
+      write(client, response, strlen(response));
+    } else { // path: /not-found or any other path at all
       write(client, not_found_response, strlen(not_found_response));
     }
+
     printf("Response sent\n");
     close(client);
   }
