@@ -4,23 +4,36 @@ void respond_client(int client, fd_set *all_clients) {
   char buffer[30000];
   char response[1024];
   struct http_request request;
-  size_t bytes_read;
+  ssize_t bytes_read;
 
   memset(buffer, 0, sizeof(buffer));
-
+  
   bytes_read = read(client, buffer, sizeof(buffer));
   printf("Bytes read: %zu\n", bytes_read);
-  if (bytes_read <= 0) {
-    perror("read");
+
+  if (bytes_read > 0){
+    buffer[bytes_read] = '\0'; // Null-terminate the buffer
+    printf("Buffer: %s\n", buffer);
+  } else if (bytes_read == 0) {
+    printf("Client disconnected: %d\n", client);
     close(client);
     FD_CLR(client, all_clients);
     return;
+  } else {
+    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+      printf("No data available to read\n");
+      return;
+    } else if (errno != 0) {
+      perror("read");
+      close(client);
+      FD_CLR(client, all_clients);
+      return;
+    }
   }
   
   char *ok_response = "HTTP/1.1 200 OK\r\n\r\n";
   char *not_found_response = "HTTP/1.1 404 Not Found\r\n\r\n";
 
-  buffer[bytes_read] = '\0'; // Null-terminate the buffer
   request = requestParser(buffer);
   char *path = strtok(request.path, "/");
 

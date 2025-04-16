@@ -9,6 +9,7 @@ void setup_new_client(int server, fd_set *clients, int *fd_max){
   client_addr_len = sizeof(client_addr);
 
   client = accept(server, (struct sockaddr *) &client_addr, &client_addr_len);
+  fcntl(client, F_SETFL, O_NONBLOCK);
   if (client < 0) {
     perror("accept");
     exit(EXIT_FAILURE);

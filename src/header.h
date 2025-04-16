@@ -12,6 +12,7 @@
 #include <sys/select.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <fcntl.h>
 
 struct http_header
 {
